@@ -14,34 +14,36 @@ export function itemsIsLoading(bool) {
     };
 }
 
-export default function Fetch_Employees() {
-    var URL = "api/Display/GetEmployeeDetails";
+export default function register_Employee(user) {
+    var URL = "api/Register";
     return (dispatch) => {
         dispatch(itemsIsLoading(true));
-        const token = localStorage.token;
-        return fetch(URL, {
-            method: "GET",
+
+        fetch(URL, {
+            method: 'POST',
             headers: {
+                'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                Accept: 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
+            },
+            body: JSON.stringify({ user })
         })
-            .then(resp => resp.json())
-            .then(data => {
-                if (data.message) {
-                    // An error will occur if the token is invalid.
-                    // If this happens, you may want to remove the invalid token.
-                    localStorage.removeItem("token")
-                } else {
-                    dispatch(fetchPostsSuccess(data))
-                }
+            .then((response) => {
+                //if (!response.ok) {
+                //    throw Error(response.statusText);
+                //}
+
+                dispatch(itemsIsLoading(false));
+
+                return response;
             })
-    };
+            .then((response) => response.json())
+            .then((items) => dispatch(fetchPostsSuccess(items)))
+            .catch(() => dispatch(itemsHasErrored(true)));
+    }
 }
 function fetchPostsSuccess(payload) {
     return {
-        type: "SHOW_EMPLOYEES",
+        type: "ADD_REGISTER",
         payload
     }
 }

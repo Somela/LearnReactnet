@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import Modal from 'react-bootstrap/Modal';
 import Fetch_departments from '../actions/depart-action';
 import Fetch_Employees from '../actions/actions';
-import ReactSearchBox from 'react-search-box';
 //import Table from './Table';
+//import Fetch_Employees_ID from '../actions/empID-action';
 
 import { bindActionCreators } from 'redux';
 
@@ -15,12 +15,12 @@ class Home extends React.Component {
             sal: 0,
             search: '',
             show: false,
-            departName: '',
-            departLocation: '',
             searchNo: 5,
             query: '',
             data: [],
-            searchString: []
+            searchString: [],
+            
+            displayEdit:false
 
         }
         //this.handleInputChange = this.handleInputChange.bind(this);
@@ -28,19 +28,97 @@ class Home extends React.Component {
         this.handleClose = this.handleClose.bind(this);
         this.onChangeDepartment = this.onChangeDepartment.bind(this);
         this.seachOnChange = this.seachOnChange.bind(this);
-        
+        this.handleDownload = this.handleDownload.bind(this);
+        //this.PolpulateModel = this.PolpulateModel.bind(this);
         //$("#empInfo").DataTable();
+        this.props.Fetch_Employees();
+        this.props.Fetch_departments();
     }
+    
+
     seachOnChange(e) {
         this.setState({
             searchNo: e.target.value
         })
+
     }
+    onChangeempID(e) {
+        this.setState({
+            empID: e.target.value
+        });
+    }
+    onChangeName(e) {
+        this.setState({
+            empName: e.target.value
+        });
+    }
+    onChangeDepartment(e) {
+        this.setState({
+            DepName: e.target.value
+        });
+    }
+    onChangeDepartmentLocation(e) {
+        this.setState({
+            departmentLocation: e.target.value
+        });
+    }
+    onChangeHireDate(e) {
+        this.setState({
+            HireDate: e.target.value
+        });
+    }
+    onChangeManager(e) {
+        this.setState({
+            Manager: e.target.value
+        });
+    }
+    handleDownload(e) {
+        var downloadLink;
+        var filename = "tableData";
+        var dataType = 'application/vnd.ms-excel';
+        var tableSelect = document.getElementById("empInfo");
+        var tableHTML = tableSelect.outerHTML.replace(/ /g, '%20');
+
+        // Specify file name
+        filename = filename ? filename + '.xlsx' : 'excel_data.xlsx';
+
+        // Create download link element
+        downloadLink = document.createElement("a");
+
+        document.body.appendChild(downloadLink);
+
+        if (navigator.msSaveOrOpenBlob) {
+            var blob = new Blob(['\ufeff', tableHTML], {
+                type: dataType
+            });
+            navigator.msSaveOrOpenBlob(blob, filename);
+        } else {
+            // Create a link to the file
+            downloadLink.href = 'data:' + dataType + ', ' + tableHTML;
+
+            // Setting the file name
+            downloadLink.download = filename;
+
+            //triggering the function
+            downloadLink.click();
+        }
+    }
+    onChangeSalary(e) {
+        this.setState({
+            Salary: e.target.value
+        });
+    }
+    PolpulateModel(data) {
+
+         this.DisplayRowsEmpID(data);
+
+    }
+    
     handleInputChange(e) {
         var Records = this.props.FetchEmployees.FetchEmployees;
-        var searchRecords = Records.filter((item) => item.empID == (e.target.value) || item.employee.toLowerCase().includes(e.target.value.toLowerCase())
-            || item.departmentName.toLowerCase().includes(e.target.value.toLowerCase()) || item.departmentLocation.toLowerCase().includes(e.target.value.toLowerCase()) || item.salary == e.target.value
-            || item.hireDate == e.target.value || item.manager.toLowerCase().includes(e.target.value.toLowerCase())
+        var searchRecords = Records.filter((item) => item.empID === (e.target.value) || item.employee.toLowerCase().includes(e.target.value.toLowerCase())
+            || item.departmentName.toLowerCase().includes(e.target.value.toLowerCase()) || item.departmentLocation.toLowerCase().includes(e.target.value.toLowerCase()) || item.salary === e.target.value
+            || item.hireDate === e.target.value || item.manager.toLowerCase().includes(e.target.value.toLowerCase())
         )
         return this.DisplayRows(searchRecords);
     }
@@ -65,7 +143,7 @@ class Home extends React.Component {
     handleShow() {
         this.setState({ show: true });
     }
-    onChangeDepartmentLocation(e) {
+    onChangeDepartmentLocations(e) {
         this.setState({
             departLocation: e.target.value
         })
@@ -91,11 +169,11 @@ class Home extends React.Component {
                     <td className="tableinfo">{this.DateTimeFormate(user.hireDate)}</td>
                     <td className="tableinfo">{user.manager}</td>
                     <td className="tableinfo">{this.AddSalary(user.salary, user.commission)}</td>
-                    <td className="tableinfo"><button type="button" className="btn btn-link"><ion-icon name="checkmark-circle-outline"></ion-icon></button></td>
+                    <td className="tableinfo"><button type="button" onClick={()=>this.PolpulateModel(user)} className="btn btn-link"><ion-icon name="checkmark-circle-outline"></ion-icon></button></td>
                     <td className="tableinfo"><button type="button" className="btn btn-link"><ion-icon name="close"></ion-icon></button></td>
+                    
                 </tr>
             ));
-
         }
     }
     loadingTable() {
@@ -132,13 +210,13 @@ class Home extends React.Component {
                     </tr>
                 </tfoot>
             </table>
+            
         } else {
             return <div className="loader"></div>
         }
     }
     render() {
-        this.props.Fetch_Employees();
-        this.props.Fetch_departments();
+        
         let fetdepartNames = this.props.Fetchdepart.Fetchdepart;
         let fetchItems = fetdepartNames.map((fetdepartName, i) =>
             <option key={i}>{fetdepartName.departmentName}</option>
@@ -154,13 +232,11 @@ class Home extends React.Component {
                             <input type="text" id="filter" className="form-control form-control-sm" placeholder="Search for..." onChange={this.handleInputChange} />
                         </div>
                         <button type="button" className="btn btn-link" onClick={this.handleShow}><ion-icon name="add-circle"></ion-icon></button>
-                        <div className="col-sm-3"></div>
+                        <button type="button" className="btn btn-link" onClick={this.handleDownload}><ion-icon name="save"></ion-icon></button>
+                        <div className="col-sm-2"></div>
                         <div className="col-sm-2">
                             <select className="form-control form-control-sm" onChange={this.seachOnChange}>
-                                <option>2</option>
-                                <option>3</option>
-                                <option>4</option>
-                                <option>5</option>
+                                
                             </select>
                         </div>
                         <Modal show={this.state.show} onHide={this.handleClose}>
@@ -172,7 +248,7 @@ class Home extends React.Component {
                                     placeholder="Enter Employee ID" />
                                 <input type="text" className="form-control form-control-sm"
                                     placeholder="Enter Employee Name" />
-                                <select className="form-control form-control-sm" onChange={this.onChangeDepartment} >
+                                <select className="form-control form-control-sm" onChange={this.onChangeDepartments} >
                                     <option> Select Any Department</option>
                                     {fetchItems}
                                 </select>
@@ -196,6 +272,7 @@ class Home extends React.Component {
                         </Modal>
                     </div>
                     {this.loadingTable()}
+                    
                 </div>
             </div>
         )
@@ -204,13 +281,15 @@ class Home extends React.Component {
 function mapStateToProps(state) {
     return {
         FetchEmployees: state.FetchEmployees,
-        Fetchdepart: state.Fetchdepart
+        Fetchdepart: state.Fetchdepart,
+        //getEmployee_ID: state.getEmployee_ID
     }
 }
 const mapDispatchToProps = dispatch => bindActionCreators(
     {
         Fetch_Employees,
         Fetch_departments,
+        //Fetch_Employees_ID
     },
     dispatch,
 )
