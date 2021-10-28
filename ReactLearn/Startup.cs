@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Owin;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
-
+using Microsoft.AspNetCore.Http;
 
 [assembly: OwinStartup(typeof(ReactLearn.Startup))]
 namespace ReactLearn
@@ -42,6 +42,16 @@ namespace ReactLearn
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
         };
     });
+
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = SameSiteMode.None;
+            });
+       //     services.AddDbContext<ApplicationDbContext>(options =>
+       //options.UseSqlServer(
+       //    Configuration.GetConnectionString(
+       //        "DefaultConnection")));
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
@@ -88,6 +98,16 @@ namespace ReactLearn
                 {
                     spa.UseReactDevelopmentServer(npmScript: "start");
                 }
+            });
+
+            app.UseSwagger(x =>
+            {
+                x.SerializeAsV2 = true;
+            });
+            app.UseSwaggerUI(x =>
+            {
+                x.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                x.RoutePrefix = string.Empty;
             });
         }
     }
